@@ -1,4 +1,4 @@
-const listings = document.querySelectorAll(".propertyCard-header");
+const listings = document.querySelectorAll(".propertyCard");
 
 const style = `
   background: url(https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons@master/svg/google-maps.svg) no-repeat center / contain;
@@ -7,19 +7,24 @@ const style = `
   background-size: 60%
 `
 
-// Add a clickable item to each listing
+// Add clickable Street View icon to each listing
 listings.forEach((listing, index) => {
-    // Create a new clickable item
-    const clickable = document.createElement("div");
-    clickable.style.cssText = style
-    
-    clickable.style.cursor = "pointer";
+  const anchor = listing.getElementsByClassName('propertyCard-anchor')
+  const wrapper = listing.getElementsByClassName('propertyCard-wrapper')
+  const header = wrapper[0].getElementsByClassName('propertyCard-header')
+  const id = anchor[0].id.slice(4);
 
-    // Add an event listener
-    clickable.addEventListener("click", () => {
-        alert(`You clicked item ${index + 1}`);
-    });
+  // Create a new clickable item
+  const clickable = document.createElement("div");
+  clickable.style.cssText = style
+  
+  clickable.style.cursor = "pointer";
 
-    // Append the clickable item to the listing
-    listing.appendChild(clickable);
+  // Add an event listener
+  clickable.addEventListener("click", () => {
+      alert(`You clicked item ${id}`);
+  });
+
+  // Append the clickable item to the listing
+  header[0].appendChild(clickable);
 });
