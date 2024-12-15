@@ -36,6 +36,11 @@ style.type = 'text/css';
 
 // Add responsive CSS rules
 style.innerHTML = `
+  #street-view {
+      width: 100%;
+      height: 500px; /* Adjust height as needed */
+  }
+
   .modalContent {
     width: 100%;
     background-color: #fefefe;
@@ -44,6 +49,11 @@ style.innerHTML = `
     height: 60%;
     position: relative;
     overflow: hidden;
+    top: -80px;
+
+    #mapframe {
+      padding: 20px;
+    }
   }
   
   @media (min-width: 600px) {
@@ -53,8 +63,21 @@ style.innerHTML = `
   }
 `;
 
-// Append the <style> element to the <head>
+const GOOGLE_API_KEY = 'AIzaSyCo580fBH4USx2s5WWQDh5xGZCNvBC_HeM'; // TODO needs passing in as env var
+
 document.head.appendChild(style);
+
+const generateGoogleMapEmbedUrl = (coordinates: [number, number]) => {
+  if (!coordinates) {
+    return undefined
+  }
+
+  const baseUrl = "https://www.google.com/maps/embed/v1/streetview"
+  const coordinatesString = `${String(coordinates[0])},${String(coordinates[1])}`
+  const url = `${baseUrl}?key=${GOOGLE_API_KEY}&location=${coordinatesString}`
+
+  return url
+}
 
 // Add clickable Street View icon and popup to each listing
 listings.forEach((listing, index) => {
@@ -75,13 +98,36 @@ listings.forEach((listing, index) => {
   const content = document.createElement("div");
   content.className = "modalContent"
 
-  content.innerHTML = `<iframe id="mapframe" src="https://www.rightmove.co.uk/properties/${id}#/streetView?channel=RES_BUY" width="100%" height="450" style="border:0;position:absolute;top:-40px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
   popup.appendChild(content)
   listing.appendChild(popup)
 
   // Add an event listener
-  clickable.addEventListener("click", () => {
-    popup.style.display = 'block'
+  clickable.addEventListener("click", async () => {
+    try {
+      popup.style.display = 'block'
+      const response = await fetch(`https://www.rightmove.co.uk/properties/${id}#`)
+
+      if (response.ok) {
+        const html = await response.text()
+  
+              const coordinateRegex = /"latitude":([0-9.-]+),"longitude":([0-9.-]+)/g;
+        const match = coordinateRegex.exec(html)
+  
+        if (match) {
+          const latitude = parseFloat(match[1]);
+          const longitude = parseFloat(match[2]);
+    
+          content.innerHTML = `<iframe width="100%" height="600" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="${generateGoogleMapEmbedUrl([latitude, longitude])}"><a href="https://www.gps.ie/">gps vehicle tracker</a></iframe>`
+        }
+        else {
+          console.error('error parsing lat long')
+        }
+      } else {
+        console.log('Error fetching page', response.statusText)
+      }
+    } catch (err) {
+      console.error('Error thrown fetching page', err)
+    }
   });
 
   // Append the clickable item to the listing
