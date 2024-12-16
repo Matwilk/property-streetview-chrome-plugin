@@ -49,11 +49,15 @@ style.innerHTML = `
     height: 60%;
     position: relative;
     overflow: hidden;
-    top: -80px;
 
     #mapframe {
       padding: 20px;
     }
+  }
+
+  .popup-close {
+    position: absolute;
+    right: 0px;
   }
   
   @media (min-width: 600px) {
@@ -66,6 +70,24 @@ style.innerHTML = `
 const GOOGLE_API_KEY = 'AIzaSyCo580fBH4USx2s5WWQDh5xGZCNvBC_HeM'; // TODO needs passing in as env var
 
 document.head.appendChild(style);
+
+// Create popup item
+const popup = document.createElement("div");
+popup.id = 'popup-dialog'
+popup.style.cssText = modalStyle
+const content = document.createElement("div");
+content.className = "modalContent"
+
+popup.appendChild(content)
+document.body.appendChild(popup)
+
+// Create the close button
+const closeButton = document.createElement('button');
+closeButton.className = 'popup-close';
+closeButton.textContent = 'Close';
+closeButton.addEventListener('click', () => {
+  popup.style.display = 'none'
+});
 
 const generateGoogleMapEmbedUrl = (coordinates: [number, number]) => {
   if (!coordinates) {
@@ -91,16 +113,6 @@ listings.forEach((listing, index) => {
   clickable.style.cssText = clickableStyle
   clickable.style.cursor = "pointer";
 
-  // Create popup item
-  const popup = document.createElement("div");
-  popup.id = `popup-${id}`
-  popup.style.cssText = modalStyle
-  const content = document.createElement("div");
-  content.className = "modalContent"
-
-  popup.appendChild(content)
-  listing.appendChild(popup)
-
   // Add an event listener
   clickable.addEventListener("click", async () => {
     try {
@@ -110,14 +122,15 @@ listings.forEach((listing, index) => {
       if (response.ok) {
         const html = await response.text()
   
-              const coordinateRegex = /"latitude":([0-9.-]+),"longitude":([0-9.-]+)/g;
+        const coordinateRegex = /"latitude":([0-9.-]+),"longitude":([0-9.-]+)/g;
         const match = coordinateRegex.exec(html)
   
         if (match) {
           const latitude = parseFloat(match[1]);
           const longitude = parseFloat(match[2]);
     
-          content.innerHTML = `<iframe width="100%" height="600" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="${generateGoogleMapEmbedUrl([latitude, longitude])}"><a href="https://www.gps.ie/">gps vehicle tracker</a></iframe>`
+          content.innerHTML = `<iframe width="100%" height="600" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="${generateGoogleMapEmbedUrl([latitude, longitude])}"></iframe>`
+          content.appendChild(closeButton)
         }
         else {
           console.error('error parsing lat long')
