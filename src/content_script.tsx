@@ -1,5 +1,3 @@
-const listings = document.querySelectorAll(".propertyCard");
-
 const clickableStyle = `
   background: url(https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons@master/svg/google-maps.svg) no-repeat center / contain;
   height:30px;
@@ -101,15 +99,27 @@ const generateGoogleMapEmbedUrl = (coordinates: [number, number]) => {
   return url
 }
 
-// Add clickable Street View icon and popup to each listing
-listings.forEach((listing, index) => {
+const makeClickableMapIcon = (listing: {
+  querySelector(arg0: string): unknown; getElementsByClassName: (arg0: string) => any; 
+}) => {
   const anchor = listing.getElementsByClassName('propertyCard-anchor')
+
+  if (!anchor || !anchor.length) {
+    return
+  }
+
   const wrapper = listing.getElementsByClassName('propertyCard-wrapper')
   const header = wrapper[0].getElementsByClassName('propertyCard-header')
+
   const id = anchor[0].id.slice(4);
+
+  if (listing.querySelector(`#clickable-${id}`)) {
+    return
+  }
 
   // Create clickable item
   const clickable = document.createElement("div");
+  clickable.id = `clickable-${id}`
   clickable.style.cssText = clickableStyle
   clickable.style.cursor = "pointer";
 
@@ -136,7 +146,7 @@ listings.forEach((listing, index) => {
           console.error('error parsing lat long')
         }
       } else {
-        console.log('Error fetching page', response.statusText)
+        console.error('Error fetching page', response.statusText)
       }
     } catch (err) {
       console.error('Error thrown fetching page', err)
@@ -145,4 +155,42 @@ listings.forEach((listing, index) => {
 
   // Append the clickable item to the listing
   header[0].appendChild(clickable);
-});
+}
+
+const insertIconToListings = () => {
+  const results = document.querySelector(".l-searchResults")
+  const listings = document.querySelectorAll(".l-searchResult");
+
+  // Add clickable Street View icon and popup to each listing
+  listings.forEach((listing, index) => {
+    makeClickableMapIcon(listing)
+
+    // Initialize MutationObserver
+    const observer = new MutationObserver(handleDomChanges);
+    const targetNode = results;
+    const config = { childList: true, subtree: true };
+    targetNode && observer.observe(targetNode, config);
+  });
+}
+
+
+function handleDomChanges(mutationsList: any, observer: any) {
+  for (const mutation of mutationsList) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        mutation.addedNodes.forEach((node: {
+          matches(arg0: string): unknown;
+          querySelector(arg0: string): unknown;
+          nodeName: string;
+          nodeType: number; getElementsByClassName: (arg0: string) => any; 
+}) => {
+          if (node.nodeType === 1) {
+            if (node.matches('div.l-searchResult.is-list')) {
+              makeClickableMapIcon(node)
+          }
+          }
+        })
+      }
+  }
+}
+
+insertIconToListings();
