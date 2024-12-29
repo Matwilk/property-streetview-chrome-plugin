@@ -65,7 +65,7 @@ style.innerHTML = `
   }
 `;
 
-const GOOGLE_API_KEY = 'AIzaSyCo580fBH4USx2s5WWQDh5xGZCNvBC_HeM'; // TODO needs passing in as env var
+const apiKey = process.env.GOOGLE_API_KEY;
 
 document.head.appendChild(style);
 
@@ -94,7 +94,7 @@ const generateGoogleMapEmbedUrl = (coordinates: [number, number]) => {
 
   const baseUrl = "https://www.google.com/maps/embed/v1/streetview"
   const coordinatesString = `${String(coordinates[0])},${String(coordinates[1])}`
-  const url = `${baseUrl}?key=${GOOGLE_API_KEY}&location=${coordinatesString}`
+  const url = `${baseUrl}?key=${apiKey}&location=${coordinatesString}`
 
   return url
 }

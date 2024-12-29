@@ -5,6 +5,11 @@
   "description": "Adds Street View popup to Rightmove property listings",
   "version": "1.0",
 
+  "icons": {
+    "128": "icon.png",
+    "32": "icon-sm.png"
+  },
+
   "content_scripts": [
       {
           "matches": ["<all_urls>"],
@@ -14,13 +19,5 @@
 
   "background": {
     "service_worker": "js/background.js"
-  },
-
-  "permissions": [
-    "scripting"
-  ],
-
-  "host_permissions": [
-    "<all_urls>"
-  ]
+  }
 }
